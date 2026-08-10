@@ -85,147 +85,152 @@ function neighborCount(alive: Uint8Array, rows: number, cols: number, r: number,
 export function runSimulation(
   grid: ContributionGrid,
   config: SimConfig,
-): { rows: number; cols: number; inert: Uint8Array; weight: Float32Array; frames: FrameState[] } {
+): {
+  rows: number;
+  cols: number;
+  inert: Uint8Array;
+  weight: Float32Array;
+  frames: FrameState[];
+} {
   const { rows, cols, inert, weight } = buildInertMask(grid);
-  const rand = mulberry32(config.seed ?? 42);
+
   const total = rows * cols;
 
-  // First, figure out which cells should eventually be alive at tick 0
-  const initialAliveIndices: number[] = [];
+  // Only real GitHub contribution cells are allowed to become alive.
+  const contributionIndices: number[] = [];
+
   for (let i = 0; i < total; i++) {
-    if (inert[i]) continue;
-    const p = 0.22 + weight[i] * 0.25;
-    if (rand() < p) {
-      initialAliveIndices.push(i);
+    if (!inert[i]) {
+      contributionIndices.push(i);
     }
   }
 
+  /*
+   * IMPORTANT:
+   *
+   * Do NOT randomly remove contribution cells.
+   * Do NOT run Game of Life on the source grid.
+   *
+   * The GitHub contribution grid is the source of truth.
+   */
+
+  const targetFrames = config.targetFrameCount;
   const frames: FrameState[] = [];
-  
-  // 1. INTRO ANIMATION (20 frames)
-  // We gradually spawn the initialAlive cells in random batches
-  const introFrames = 20;
-  // Shuffle the initial alive indices for organic spawning
-  for (let i = initialAliveIndices.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [initialAliveIndices[i], initialAliveIndices[j]] = [initialAliveIndices[j], initialAliveIndices[i]];
-  }
-  
-  let currentIntroAlive = new Uint8Array(total);
-  let currentIntroAge = new Uint16Array(total);
-  
-  for (let f = 0; f < introFrames; f++) {
-    const nextIntroAlive = new Uint8Array(currentIntroAlive);
-    const nextIntroAge = new Uint16Array(currentIntroAge);
-    const births: [number, number][] = [];
-    
-    // Calculate how many cells should be spawned by this frame
-    const targetSpawned = Math.floor(((f + 1) / introFrames) * initialAliveIndices.length);
-    let currentSpawned = 0;
-    
-    // Turn on the required number of cells from our shuffled list
-    for (let i = 0; i < targetSpawned; i++) {
-      const idx = initialAliveIndices[i];
-      if (nextIntroAlive[idx] === 0) {
-        nextIntroAlive[idx] = 1;
-        nextIntroAge[idx] = 1;
-        const r = Math.floor(idx / cols);
-        const c = idx % cols;
-        births.push([r, c]);
-      }
-    }
-    
-    frames.push({ alive: nextIntroAlive, births, deaths: [], age: nextIntroAge });
-    currentIntroAlive = nextIntroAlive;
-    currentIntroAge = nextIntroAge;
-  }
-  
-  // Setup the starting state for the actual simulation
-  let alive = currentIntroAlive;
-  let age = currentIntroAge;
 
-  // Add a 2-second pause (20 frames) before the game begins
-  for (let f = 0; f < 20; f++) {
-    frames.push({ alive: new Uint8Array(alive), births: [], deaths: [], age: new Uint16Array(age) });
-  }
+  // Deterministic ordering.
+  //
+  // We reveal cells from left -> right and top -> bottom.
+  // You can change this later to create a more interesting animation.
+  contributionIndices.sort((a, b) => {
+    const ar = Math.floor(a / cols);
+    const ac = a % cols;
 
-  const maxTicks = config.maxTicks ?? 1000; // Emergency ceiling of 1000 frames
-  const history: Uint8Array[] = [];
-  let paddingTicksLeft = -1; // -1 means we haven't detected a loop yet
+    const br = Math.floor(b / cols);
+    const bc = b % cols;
 
-  for (let tick = 0; tick < maxTicks; tick++) {
-    const next = new Uint8Array(total);
-    const nextAge = new Uint16Array(total);
+    if (ac !== bc) return ac - bc;
+    return ar - br;
+  });
+
+  /*
+   * Phase 1:
+   * Gradually reveal the actual GitHub contribution cells.
+   *
+   * About 60% of the animation is used for the reveal.
+   */
+  const revealFrames = Math.max(
+    1,
+    Math.floor(targetFrames * 0.65),
+  );
+
+  for (let f = 0; f < revealFrames; f++) {
+    const alive = new Uint8Array(total);
+    const age = new Uint16Array(total);
+
     const births: [number, number][] = [];
     const deaths: [number, number][] = [];
 
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const idx = r * cols + c;
-        if (inert[idx]) continue; // never comes alive - permanent background
+    const progress =
+      revealFrames === 1
+        ? 1
+        : (f + 1) / revealFrames;
 
-        const n = neighborCount(alive, rows, cols, r, c);
-        const isAlive = alive[idx] === 1;
+    const visibleCount = Math.floor(
+      progress * contributionIndices.length,
+    );
 
-        if (isAlive) {
-          // relaxed survival: 2-4 neighbors (instead of strict 2-3) so sparse,
-          // fragmented contribution grids can still sustain live colonies
-          if (n >= 2 && n <= 4) {
-            next[idx] = 1;
-            nextAge[idx] = age[idx] + 1;
-          } else {
-            deaths.push([r, c]);
-          }
-        } else {
-          // relaxed birth: 3 neighbors as classic Life, but also allow 2
-          // neighbors to spark to life with a probability boosted by the
-          // cell's own contribution weight (busier days "catch" more easily)
-          if (n === 3 || (n === 2 && rand() < 0.15 + weight[idx] * 0.25)) {
-            next[idx] = 1;
-            nextAge[idx] = 1;
-            births.push([r, c]);
-          }
-        }
-      }
+    for (let i = 0; i < visibleCount; i++) {
+      const idx = contributionIndices[i];
+
+      alive[idx] = 1;
+      age[idx] = Math.min(7, f + 1);
+
+      const r = Math.floor(idx / cols);
+      const c = idx % cols;
+
+      births.push([r, c]);
     }
 
-    frames.push({ alive: next, births, deaths, age: nextAge });
-    alive = next;
-    age = nextAge;
-
-    // Loop detection & Padding
-    if (paddingTicksLeft > 0) {
-      paddingTicksLeft--;
-      if (paddingTicksLeft === 0) {
-        break; // End after playing the loop for 5 seconds
-      }
-    } else if (paddingTicksLeft === -1) {
-      // Loop detection: check if current state matches any of the last 8 states
-      let isLoop = false;
-      for (let h = history.length - 1; h >= Math.max(0, history.length - 8); h--) {
-        let match = true;
-        for (let i = 0; i < total; i++) {
-          if (history[h][i] !== next[i]) {
-            match = false;
-            break;
-          }
-        }
-        if (match) {
-          isLoop = true;
-          break;
-        }
-      }
-      
-      if (isLoop) {
-        // Hold the stable loop for exactly 50 ticks (5 seconds at 10fps) before ending the GIF
-        paddingTicksLeft = 50; 
-      } else {
-        history.push(next);
-      }
-    }
+    frames.push({
+      alive,
+      births,
+      deaths,
+      age,
+    });
   }
 
-  return { rows, cols, inert, weight, frames };
+  /*
+   * Phase 2:
+   * Hold the EXACT GitHub contribution pattern.
+   *
+   * This is the important part:
+   *
+   * Every non-zero GitHub contribution cell is alive.
+   * Every zero-contribution cell remains inert.
+   */
+  const finalAlive = new Uint8Array(total);
+  const finalAge = new Uint16Array(total);
+
+  for (const idx of contributionIndices) {
+    finalAlive[idx] = 1;
+    finalAge[idx] = 7;
+  }
+
+  const holdFrames = targetFrames - frames.length;
+
+  for (let f = 0; f < holdFrames; f++) {
+    frames.push({
+      alive: new Uint8Array(finalAlive),
+      births: [],
+      deaths: [],
+      age: new Uint16Array(finalAge),
+    });
+  }
+
+  /*
+   * Safety:
+   * Guarantee EXACTLY targetFrameCount frames.
+   */
+  while (frames.length < targetFrames) {
+    frames.push({
+      alive: new Uint8Array(finalAlive),
+      births: [],
+      deaths: [],
+      age: new Uint16Array(finalAge),
+    });
+  }
+
+  if (frames.length > targetFrames) {
+    frames.length = targetFrames;
+  }
+
+  return {
+    rows,
+    cols,
+    inert,
+    weight,
+    frames,
+  };
 }
 
 
