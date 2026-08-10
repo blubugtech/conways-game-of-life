@@ -15,17 +15,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: generate animation
         uses: ./
         with:
-          github_user_name: ${{ github.repository_owner }}
+          github_user_name: amankrmj09
           github_token: ${{ secrets.GITHUB_TOKEN }}
           out_dir: dist
 
       - name: push output to output branch
-        uses: crazy-max/ghaction-github-pages@v4
+        uses: crazy-max/ghaction-github-pages@v5
         with:
           target_branch: output
           build_dir: dist
