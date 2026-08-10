@@ -94,7 +94,7 @@ export async function renderGIF(
       .toBuffer({ resolveWithObject: true });
 
     const rgba = new Uint8ClampedArray(data.buffer, data.byteOffset, data.byteLength);
-    const palette256 = quantize(rgba, 128);
+    const palette256 = quantize(rgba, 256);
     const index = applyPalette(rgba, palette256);
 
     const isLast = i === frames.length - 1;

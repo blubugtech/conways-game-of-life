@@ -43132,16 +43132,16 @@ const CELL = 11;
 const GAP = 3;
 const PAD = 14;
 const DARK_PALETTE = {
-    bg: "#050805",
-    inert: "#0c100c",
-    scanline: "#070b07",
-    aliveBright: "#37d269",
-    aliveDim: "#18502e",
-    birth: "#d7ffc8",
-    death: "#dc463c",
-    glowAlive: "#3cd26e",
-    glowBirth: "#dcffd2",
-    glowDeath: "#d2463c",
+    bg: "#0d1117", // standard github dark mode background
+    inert: "#161b22", // standard github empty cell
+    scanline: "#0d1117",
+    aliveBright: "#39d353", // vibrant github green
+    aliveDim: "#0e4429", // dim github green
+    birth: "#ffffff", // white flash
+    death: "#f85149", // github red
+    glowAlive: "#39d353",
+    glowBirth: "#ffffff",
+    glowDeath: "#f85149",
 };
 const LIGHT_PALETTE = {
     bg: "#f6f8f6",
@@ -43326,7 +43326,7 @@ async function renderGIF(rows, cols, inert, frames, palette, outPath, scale = 2)
             .raw()
             .toBuffer({ resolveWithObject: true });
         const rgba = new Uint8ClampedArray(data.buffer, data.byteOffset, data.byteLength);
-        const palette256 = quantize(rgba, 128);
+        const palette256 = quantize(rgba, 256);
         const index = applyPalette(rgba, palette256);
         const isLast = i === frames.length - 1;
         const delay = isLast ? ANIM_FRAME_MS + HOLD_MS : ANIM_FRAME_MS;
