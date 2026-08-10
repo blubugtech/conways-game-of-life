@@ -84,20 +84,68 @@ export function runSimulation(
   const rand = mulberry32(config.seed ?? 42);
   const total = rows * cols;
 
-  let alive = new Uint8Array(total);
-  let age = new Uint16Array(total);
-
-  // seed: live cells only on days that actually have contributions,
-  // weighted so higher-activity days are more likely to be patient zero
+  // First, figure out which cells should eventually be alive at tick 0
+  const initialAliveIndices: number[] = [];
   for (let i = 0; i < total; i++) {
     if (inert[i]) continue;
-    const p = 0.22 + weight[i] * 0.25; // busier days seed more readily
-    if (rand() < p) alive[i] = 1;
+    const p = 0.22 + weight[i] * 0.25;
+    if (rand() < p) {
+      initialAliveIndices.push(i);
+    }
   }
 
   const frames: FrameState[] = [];
-  const maxTicks = config.maxTicks ?? config.targetFrameCount;
+  
+  // 1. INTRO ANIMATION (20 frames)
+  // We gradually spawn the initialAlive cells in random batches
+  const introFrames = 20;
+  // Shuffle the initial alive indices for organic spawning
+  for (let i = initialAliveIndices.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [initialAliveIndices[i], initialAliveIndices[j]] = [initialAliveIndices[j], initialAliveIndices[i]];
+  }
+  
+  let currentIntroAlive = new Uint8Array(total);
+  let currentIntroAge = new Uint16Array(total);
+  
+  for (let f = 0; f < introFrames; f++) {
+    const nextIntroAlive = new Uint8Array(currentIntroAlive);
+    const nextIntroAge = new Uint16Array(currentIntroAge);
+    const births: [number, number][] = [];
+    
+    // Calculate how many cells should be spawned by this frame
+    const targetSpawned = Math.floor(((f + 1) / introFrames) * initialAliveIndices.length);
+    let currentSpawned = 0;
+    
+    // Turn on the required number of cells from our shuffled list
+    for (let i = 0; i < targetSpawned; i++) {
+      const idx = initialAliveIndices[i];
+      if (nextIntroAlive[idx] === 0) {
+        nextIntroAlive[idx] = 1;
+        nextIntroAge[idx] = 1;
+        const r = Math.floor(idx / cols);
+        const c = idx % cols;
+        births.push([r, c]);
+      }
+    }
+    
+    frames.push({ alive: nextIntroAlive, births, deaths: [], age: nextIntroAge });
+    currentIntroAlive = nextIntroAlive;
+    currentIntroAge = nextIntroAge;
+  }
+  
+  // Setup the starting state for the actual simulation
+  let alive = currentIntroAlive;
+  let age = currentIntroAge;
+
+  // Add a 2-second pause (20 frames) before the game begins
+  for (let f = 0; f < 20; f++) {
+    frames.push({ alive: new Uint8Array(alive), births: [], deaths: [], age: new Uint16Array(age) });
+  }
+
+  const maxTicks = config.maxTicks ?? 1000; // Emergency ceiling of 1000 frames
   const history: Uint8Array[] = [];
+  let paddingTicksLeft = -1; // -1 means we haven't detected a loop yet
 
   for (let tick = 0; tick < maxTicks; tick++) {
     const next = new Uint8Array(total);
@@ -139,26 +187,36 @@ export function runSimulation(
     alive = next;
     age = nextAge;
 
-    // Loop detection: check if current state matches any of the last 8 states
-    let isLoop = false;
-    for (let h = history.length - 1; h >= Math.max(0, history.length - 8); h--) {
-      let match = true;
-      for (let i = 0; i < total; i++) {
-        if (history[h][i] !== next[i]) {
-          match = false;
+    // Loop detection & Padding
+    if (paddingTicksLeft > 0) {
+      paddingTicksLeft--;
+      if (paddingTicksLeft === 0) {
+        break; // End after playing the loop for 5 seconds
+      }
+    } else if (paddingTicksLeft === -1) {
+      // Loop detection: check if current state matches any of the last 8 states
+      let isLoop = false;
+      for (let h = history.length - 1; h >= Math.max(0, history.length - 8); h--) {
+        let match = true;
+        for (let i = 0; i < total; i++) {
+          if (history[h][i] !== next[i]) {
+            match = false;
+            break;
+          }
+        }
+        if (match) {
+          isLoop = true;
           break;
         }
       }
-      if (match) {
-        isLoop = true;
-        break;
+      
+      if (isLoop) {
+        // Hold the stable loop for exactly 50 ticks (5 seconds at 10fps) before ending the GIF
+        paddingTicksLeft = 50; 
+      } else {
+        history.push(next);
       }
     }
-    
-    if (isLoop) {
-      break;
-    }
-    history.push(next);
   }
 
   return { rows, cols, inert, weight, frames };
