@@ -29,7 +29,7 @@ function buildSyntheticGrid(): ContributionGrid {
         count = Math.floor(Math.random() * (inIntenseStreak ? 15 : 6)) + 1;
       }
       if (count > maxCount) maxCount = count;
-      week.push({ date: `2025-W${c}-${r}`, count });
+      week.push({ date: `2025-W${c}-${r}`, count, weekday: r });
     }
     weeks.push(week);
   }
