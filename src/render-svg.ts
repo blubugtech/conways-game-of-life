@@ -1,5 +1,5 @@
 import type { FrameState } from "./simulate.js";
-import { ANIM_FRAME_COUNT, ANIM_FRAME_MS, HOLD_MS, TOTAL_MS, CELL, GAP, PAD, type Palette } from "./constants.js";
+import { ANIM_FRAME_COUNT, ANIM_FRAME_MS, HOLD_MS, TOTAL_MS, CELL, GAP, PAD, TITLE_H, type Palette } from "./constants.js";
 
 // For each non-inert cell, build a compact timeline of "stage at each frame"
 // then collapse consecutive identical stages into keyframe percentages,
@@ -105,7 +105,7 @@ export function renderSVG(
   palette: Palette,
 ): string {
   const width = cols * (CELL + GAP) - GAP + PAD * 2;
-  const height = rows * (CELL + GAP) - GAP + PAD * 2;
+  const height = rows * (CELL + GAP) - GAP + PAD * 2 + TITLE_H;
 
   const rects: string[] = [];
   const animations: string[] = [];
@@ -114,7 +114,7 @@ export function renderSVG(
     for (let c = 0; c < cols; c++) {
       const idx = r * cols + c;
       const x = PAD + c * (CELL + GAP);
-      const y = PAD + r * (CELL + GAP);
+      const y = PAD + TITLE_H + r * (CELL + GAP);
       const cellId = `c${r}_${c}`;
 
       if (inert[idx]) {
@@ -133,6 +133,7 @@ export function renderSVG(
 
   return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <rect x="0" y="0" width="${width}" height="${height}" fill="${palette.bg}" />
+<text x="${width / 2}" y="${PAD + 12}" text-anchor="middle" font-family="monospace, 'Courier New', Courier" font-size="16" fill="${palette.aliveBright}" font-weight="bold" letter-spacing="2">SINGULARITY GRID</text>
 ${rects.join("\n")}
 ${animations.join("\n")}
 </svg>`;

@@ -6,10 +6,10 @@ const { GIFEncoder, quantize, applyPalette } = gifenc as unknown as {
   applyPalette: typeof import("gifenc").applyPalette;
 };
 import type { FrameState } from "./simulate.js";
-import { ANIM_FRAME_MS, HOLD_MS, CELL, GAP, PAD, type Palette } from "./constants.js";
+import { ANIM_FRAME_MS, HOLD_MS, CELL, GAP, PAD, TITLE_H, type Palette } from "./constants.js";
 
 function cellXY(r: number, c: number): [number, number] {
-  return [PAD + c * (CELL + GAP), PAD + r * (CELL + GAP)];
+  return [PAD + c * (CELL + GAP), PAD + TITLE_H + r * (CELL + GAP)];
 }
 
 function frameSVG(
@@ -69,6 +69,7 @@ function frameSVG(
   return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
 <defs><filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2"/></filter></defs>
 <rect x="0" y="0" width="${width}" height="${height}" fill="${palette.bg}" />
+<text x="${width / 2}" y="${PAD + 12}" text-anchor="middle" font-family="monospace, 'Courier New', Courier" font-size="16" fill="${palette.aliveBright}" font-weight="bold" letter-spacing="2">SINGULARITY GRID</text>
 ${glows.join("\n")}
 ${rects.join("\n")}
 <text x="${PAD}" y="${textY}" font-family="monospace, 'Courier New', Courier" font-size="11" fill="${palette.aliveBright}" font-weight="bold" letter-spacing="1">${textStr}</text>
@@ -85,7 +86,7 @@ export async function renderGIF(
   scale = 2,
 ): Promise<void> {
   const width = cols * (CELL + GAP) - GAP + PAD * 2;
-  const height = rows * (CELL + GAP) - GAP + PAD * 2 + 20; // Extra 20px for text
+  const height = rows * (CELL + GAP) - GAP + PAD * 2 + TITLE_H + 20; // Extra 20px for text
   const outW = width * scale;
   const outH = height * scale;
 

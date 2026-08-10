@@ -6,6 +6,7 @@ export const TOTAL_MS = ANIM_FRAME_COUNT * ANIM_FRAME_MS + HOLD_MS; // = 15000ms
 export const CELL = 11;
 export const GAP = 3;
 export const PAD = 14;
+export const TITLE_H = 30;
 
 export interface Palette {
   bg: string;
