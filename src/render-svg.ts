@@ -69,16 +69,31 @@ function buildKeyframeAnimation(
   const values: string[] = [];
   const keyTimes: string[] = [];
 
+  let deathTimer = 0;
+
   const n = frames.length;
   for (let i = 0; i < n; i++) {
     const f = frames[i];
     const isBirth = f.births.some(([r, c]) => r * cols + c === idx);
     const isDeath = f.deaths.some(([r, c]) => r * cols + c === idx);
     const isAlive = f.alive[idx] === 1;
-    const age = f.age[idx];
-    const stage: Stage = isAlive ? (age > 6 ? 5 : 4) : 0;
 
-    const color = stageColor(stage, isDeath, isBirth, p);
+    if (deathTimer > 0) deathTimer--;
+    if (isDeath) deathTimer = 5;
+
+    let color: string;
+    if (isAlive) {
+      if (isBirth) color = p.birth;
+      else {
+        const age = f.age[idx];
+        color = age > 6 ? p.aliveDim : p.aliveBright;
+      }
+    } else if (deathTimer > 0) {
+      color = p.death;
+    } else {
+      color = p.inert;
+    }
+
     values.push(color);
     keyTimes.push((i / (n - 1)).toFixed(4));
   }
@@ -105,7 +120,7 @@ export function renderSVG(
   palette: Palette,
 ): string {
   const width = cols * (CELL + GAP) - GAP + PAD * 2;
-  const height = rows * (CELL + GAP) - GAP + PAD * 2;
+  const height = rows * (CELL + GAP) - GAP + PAD * 2 + 20; // 20px for top title
 
   const rects: string[] = [];
   const animations: string[] = [];
@@ -114,7 +129,7 @@ export function renderSVG(
     for (let c = 0; c < cols; c++) {
       const idx = r * cols + c;
       const x = PAD + c * (CELL + GAP);
-      const y = PAD + r * (CELL + GAP);
+      const y = PAD + 20 + r * (CELL + GAP); // Shift down by 20
       const cellId = `c${r}_${c}`;
 
       if (inert[idx]) {
@@ -131,8 +146,11 @@ export function renderSVG(
     }
   }
 
+  const titleStr = "SINGULARITY GRID";
+
   return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <rect x="0" y="0" width="${width}" height="${height}" fill="${palette.bg}" />
+<text x="${width / 2}" y="${PAD + 5}" text-anchor="middle" font-family="monospace, 'Courier New', Courier" font-size="12" fill="${palette.aliveBright}" font-weight="bold" letter-spacing="2">${titleStr}</text>
 ${rects.join("\n")}
 ${animations.join("\n")}
 </svg>`;
