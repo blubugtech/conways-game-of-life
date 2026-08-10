@@ -25,10 +25,10 @@ export const DARK_PALETTE: Palette = {
   aliveBright: "#39d353", // vibrant github green
   aliveDim: "#39d353", // same as bright for solid color
   birth: "#39d353", // same as alive
-  death: "#161b22", // same as inert
+  death: "#f85149", // github red
   glowAlive: "#39d353",
   glowBirth: "#39d353",
-  glowDeath: "#161b22",
+  glowDeath: "#f85149",
 };
 
 export const LIGHT_PALETTE: Palette = {
@@ -38,8 +38,8 @@ export const LIGHT_PALETTE: Palette = {
   aliveBright: "#1a8a44",
   aliveDim: "#1a8a44", // same as bright for solid color
   birth: "#1a8a44", // same as alive
-  death: "#e8ede8", // same as inert
+  death: "#c23b30", // red
   glowAlive: "#1a8a44",
   glowBirth: "#1a8a44",
-  glowDeath: "#e8ede8",
+  glowDeath: "#c23b30",
 };
