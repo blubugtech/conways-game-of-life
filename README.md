@@ -6,7 +6,15 @@
 
 [![Build](https://img.shields.io/github/actions/workflow/status/blubugtech/singularity-grid/generate.yml?style=for-the-badge)](https://github.com/blubugtech/singularity-grid/actions)
 
-*Inspired by [Platane/snk](https://github.com/Platane/snk) and Conway's Game of Life*
+*Inspired by [Platane/snk](https://github.com/Platane/snk)*
+
+<br />
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/blubugtech/singularity-grid/output/singularity-grid-dark.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/blubugtech/singularity-grid/output/singularity-grid-light.svg" />
+  <img alt="singularity-grid" src="https://raw.githubusercontent.com/blubugtech/singularity-grid/output/singularity-grid-light.svg" />
+</picture>
 
 </div>
 
@@ -54,9 +62,9 @@ For dark mode support on github, use this [special syntax](https://docs.github.c
 
 ```html
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="github-snake-dark.svg" />
-  <source media="(prefers-color-scheme: light)" srcset="github-snake.svg" />
-  <img alt="github-snake" src="github-snake.svg" />
+  <source media="(prefers-color-scheme: dark)" srcset="singularity-grid-dark.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="singularity-grid-light.svg" />
+  <img alt="singularity-grid" src="singularity-grid-light.svg" />
 </picture>
 ```
 
