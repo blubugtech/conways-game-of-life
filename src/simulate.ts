@@ -34,8 +34,9 @@ function mulberry32(seed: number) {
 export function buildInertMask(grid: ContributionGrid): {
   rows: number;
   cols: number;
-  inert: Uint8Array; // 1 = permanently dead (no real contribution that day)
-  weight: Float32Array; // 0..1 normalized contribution intensity, used for seeding + visuals
+  inert: Uint8Array; // 1 = permanently dead (out of bounds dates)
+  weight: Float32Array; // 0..1 normalized contribution intensity
+  contributionIndices: number[]; // indices of cells with actual commits
 } {
   const cols = grid.weeks.length;
   const rows = 7;
@@ -44,6 +45,7 @@ export function buildInertMask(grid: ContributionGrid): {
   // actual API entry, so partial first/last weeks and future dates stay dead.
   const inert = new Uint8Array(rows * cols).fill(1);
   const weight = new Float32Array(rows * cols);
+  const contributionIndices: number[] = [];
 
   for (let c = 0; c < cols; c++) {
     const week = grid.weeks[c];
@@ -52,18 +54,19 @@ export function buildInertMask(grid: ContributionGrid): {
       // index — so partial weeks and any API ordering are handled correctly.
       const r = day.weekday;
       const idx = r * cols + c;
-      if (day.count === 0) {
-        // Day is present but has no contributions → stay inert
-        inert[idx] = 1;
-        weight[idx] = 0;
-      } else {
-        inert[idx] = 0;
+      
+      inert[idx] = 0; // Date exists in the calendar
+
+      if (day.count > 0) {
         weight[idx] = grid.maxCount > 0 ? Math.min(1, day.count / grid.maxCount) : 0.5;
+        contributionIndices.push(idx);
+      } else {
+        weight[idx] = 0;
       }
     }
   }
 
-  return { rows, cols, inert, weight };
+  return { rows, cols, inert, weight, contributionIndices };
 }
 
 function neighborCount(alive: Uint8Array, rows: number, cols: number, r: number, c: number): number {
@@ -91,18 +94,9 @@ export function runSimulation(
   weight: Float32Array;
   frames: FrameState[];
 } {
-  const { rows, cols, inert, weight } = buildInertMask(grid);
+  const { rows, cols, inert, weight, contributionIndices } = buildInertMask(grid);
 
   const total = rows * cols;
-
-  // Only real GitHub contribution cells are allowed to become alive.
-  const contributionIndices: number[] = [];
-
-  for (let i = 0; i < total; i++) {
-    if (!inert[i]) {
-      contributionIndices.push(i);
-    }
-  }
 
   const rng = mulberry32(config.seed ?? 42);
 
