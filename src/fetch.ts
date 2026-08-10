@@ -53,7 +53,7 @@ export async function fetchContributionGrid(
   token: string,
 ): Promise<ContributionGrid> {
   const gql = graphql.defaults({
-    headers: { authorization: `token ${token}` },
+    headers: { authorization: `bearer ${token}` },
   });
 
   // Always fetch exactly the trailing 52 weeks (matching GitHub's profile UI)
