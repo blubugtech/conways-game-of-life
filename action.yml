@@ -1,0 +1,22 @@
+name: "Singularity Grid"
+description: "Turns your GitHub contribution graph into a 15-second animated takeover (Conway's Game of Life)."
+author: "blubugtech"
+branding:
+  icon: "activity"
+  color: "blue"
+
+inputs:
+  github_user_name:
+    description: "GitHub username to fetch contribution graph for"
+    required: true
+  github_token:
+    description: "GitHub token (can be a standard secrets.GITHUB_TOKEN with no extra scopes)"
+    required: true
+  out_dir:
+    description: "Directory to output the generated files"
+    required: false
+    default: "dist"
+
+runs:
+  using: "node20"
+  main: "action/index.js"
