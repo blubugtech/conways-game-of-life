@@ -53,7 +53,7 @@ export async function fetchContributionGrid(
   token: string,
 ): Promise<ContributionGrid> {
   const gql = graphql.defaults({
-    headers: { authorization: `bearer ${token}` },
+    headers: { authorization: `token ${token}` },
   });
 
   // Always fetch exactly the trailing 52 weeks (matching GitHub's profile UI)
@@ -66,6 +66,8 @@ export async function fetchContributionGrid(
     from: from.toISOString(),
     to: to.toISOString(),
   });
+
+  console.log("Raw GraphQL Response:", JSON.stringify(res, null, 2));
 
   const calendar = res.user.contributionsCollection.contributionCalendar;
   const rawWeeks = calendar.weeks;
