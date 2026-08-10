@@ -2,7 +2,7 @@ name: generate singularity-grid contribution animation
 
 on:
   schedule:
-    - cron: "0 4 * * *" # daily at 04:00 UTC
+    - cron: "0 0 * * *" # daily at 00:00 UTC
   workflow_dispatch: {}
   push:
     branches: [main]
