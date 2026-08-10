@@ -18,5 +18,18 @@ inputs:
     default: "dist"
 
 runs:
-  using: "node20"
-  main: "action/index.js"
+  using: "composite"
+  steps:
+    - name: Install Dependencies
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm ci
+
+    - name: Run Animation Generator
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npx tsx src/main.ts
+      env:
+        INPUT_GITHUB_USER_NAME: ${{ inputs.github_user_name }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github_token }}
+        INPUT_OUT_DIR: ${{ inputs.out_dir }}
