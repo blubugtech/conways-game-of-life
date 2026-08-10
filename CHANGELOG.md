@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-08-10
+
+### Changed
+- **Token Best Practices**: `github_token` now defaults to `${{ github.token }}` in `action.yml`, making it completely optional for end-users.
+- **Authorization Standard**: Updated the GraphQL API request to use the `bearer ${token}` authorization header format rather than `token ${token}`, aligning with official GitHub App and GraphQL API standards.
 ## [1.0.4] - 2026-08-10
 
 ### Fixed
