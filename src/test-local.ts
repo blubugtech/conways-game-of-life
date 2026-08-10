@@ -1,7 +1,7 @@
 import { runSimulation } from "./simulate.js";
 import { renderSVG } from "./render-svg.js";
 import { renderGIF } from "./render-gif.js";
-import { ANIM_FRAME_COUNT, DARK_PALETTE, LIGHT_PALETTE } from "./constants.js";
+import { DARK_PALETTE, LIGHT_PALETTE } from "./constants.js";
 import type { ContributionGrid } from "./fetch.js";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -45,7 +45,7 @@ async function main() {
   const grid = buildSyntheticGrid();
 
   console.log("Running simulation...");
-  const sim = runSimulation(grid, { seed: 7, maxTicks: 500, targetFrameCount: ANIM_FRAME_COUNT });
+  const sim = runSimulation(grid, { seed: 7 });
 
   console.log("Rendering SVG (dark + light)...");
   await fs.writeFile(path.join(outDir, "singularity-grid-dark.svg"), renderSVG(sim.rows, sim.cols, sim.inert, sim.frames, DARK_PALETTE));

@@ -1,5 +1,5 @@
 import type { FrameState } from "./simulate.js";
-import { ANIM_FRAME_COUNT, ANIM_FRAME_MS, HOLD_MS, TOTAL_MS, CELL, GAP, PAD, TITLE_H, type Palette } from "./constants.js";
+import { ANIM_FRAME_MS, HOLD_MS, CELL, GAP, PAD, TITLE_H, type Palette } from "./constants.js";
 
 // For each non-inert cell, build a compact timeline of "stage at each frame"
 // then collapse consecutive identical stages into keyframe percentages,
@@ -87,9 +87,10 @@ function buildKeyframeAnimation(
   values.push(values[values.length - 1]);
   keyTimes.push("1");
 
+  const TOTAL_MS = n * ANIM_FRAME_MS + HOLD_MS;
   const animDur = (TOTAL_MS / 1000).toFixed(3);
   // scale keyTimes to account for hold: animated portion occupies (ANIM portion) of total
-  const animPortion = (ANIM_FRAME_COUNT * ANIM_FRAME_MS) / TOTAL_MS;
+  const animPortion = (n * ANIM_FRAME_MS) / TOTAL_MS;
   const scaledKeyTimes = keyTimes.map((t, i) =>
     i === keyTimes.length - 1 ? "1" : (parseFloat(t) * animPortion).toFixed(4),
   );

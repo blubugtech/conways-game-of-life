@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Game of Life birth logic**: Fixed an issue where 0-commit days were incorrectly marked as permanently inert, preventing any new cells from being born into empty spots during the Game of Life phase. 0-commit days now correctly act as playable space.
+
+### Changed
+- **Unified simulation color**: Active cells are now rendered as a single, uniform solid green throughout both the filling phase and Game of Life phase, eliminating visually distracting birth flashes or intensity changes. Dead cells correctly flash red.
+- **Simulation pacing**: Cut the animation speed in half (increased frame duration to 180ms) for better visibility.
+- **Simulation flow limits**: Added a 2-second hold after the random reveal finishes before starting Game of Life, and strictly capped the Game of Life phase to a maximum of 30 seconds.
+
 ## [1.0.5] - 2026-08-10
 
 ### Changed

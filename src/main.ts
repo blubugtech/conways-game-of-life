@@ -3,7 +3,7 @@ import { fetchContributionGrid } from "./fetch.js";
 import { runSimulation } from "./simulate.js";
 import { renderSVG } from "./render-svg.js";
 import { renderGIF } from "./render-gif.js";
-import { ANIM_FRAME_COUNT, DARK_PALETTE, LIGHT_PALETTE } from "./constants.js";
+import { DARK_PALETTE, LIGHT_PALETTE } from "./constants.js";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -31,8 +31,6 @@ async function main() {
   console.log("Running Game of Life AI-virus simulation...");
   const sim = runSimulation(grid, {
     seed: 42,
-    maxTicks: 500,
-    targetFrameCount: ANIM_FRAME_COUNT,
   });
 
   await fs.mkdir(outDir, { recursive: true });

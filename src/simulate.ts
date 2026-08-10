@@ -1,4 +1,5 @@
 import type { ContributionGrid } from "./fetch.js";
+import { ANIM_FRAME_MS } from "./constants.js";
 
 export type CellStage = 0 | 1 | 2 | 3 | 4 | 5;
 // 0 = empty/inert (no real contribution, permanently unavailable)
@@ -17,8 +18,6 @@ export interface FrameState {
 
 export interface SimConfig {
   seed?: number;
-  maxTicks?: number;
-  targetFrameCount: number; // exact frame count to hit the desired duration
 }
 
 function mulberry32(seed: number) {
@@ -35,8 +34,9 @@ function mulberry32(seed: number) {
 export function buildInertMask(grid: ContributionGrid): {
   rows: number;
   cols: number;
-  inert: Uint8Array; // 1 = permanently dead (no real contribution that day)
-  weight: Float32Array; // 0..1 normalized contribution intensity, used for seeding + visuals
+  inert: Uint8Array; // 1 = permanently dead (out of bounds dates)
+  weight: Float32Array; // 0..1 normalized contribution intensity
+  contributionIndices: number[]; // indices of cells with actual commits
 } {
   const cols = grid.weeks.length;
   const rows = 7;
@@ -45,6 +45,7 @@ export function buildInertMask(grid: ContributionGrid): {
   // actual API entry, so partial first/last weeks and future dates stay dead.
   const inert = new Uint8Array(rows * cols).fill(1);
   const weight = new Float32Array(rows * cols);
+  const contributionIndices: number[] = [];
 
   for (let c = 0; c < cols; c++) {
     const week = grid.weeks[c];
@@ -53,18 +54,19 @@ export function buildInertMask(grid: ContributionGrid): {
       // index — so partial weeks and any API ordering are handled correctly.
       const r = day.weekday;
       const idx = r * cols + c;
-      if (day.count === 0) {
-        // Day is present but has no contributions → stay inert
-        inert[idx] = 1;
-        weight[idx] = 0;
-      } else {
-        inert[idx] = 0;
+      
+      inert[idx] = 0; // Date exists in the calendar
+
+      if (day.count > 0) {
         weight[idx] = grid.maxCount > 0 ? Math.min(1, day.count / grid.maxCount) : 0.5;
+        contributionIndices.push(idx);
+      } else {
+        weight[idx] = 0;
       }
     }
   }
 
-  return { rows, cols, inert, weight };
+  return { rows, cols, inert, weight, contributionIndices };
 }
 
 function neighborCount(alive: Uint8Array, rows: number, cols: number, r: number, c: number): number {
@@ -92,136 +94,118 @@ export function runSimulation(
   weight: Float32Array;
   frames: FrameState[];
 } {
-  const { rows, cols, inert, weight } = buildInertMask(grid);
+  const { rows, cols, inert, weight, contributionIndices } = buildInertMask(grid);
 
   const total = rows * cols;
 
-  // Only real GitHub contribution cells are allowed to become alive.
-  const contributionIndices: number[] = [];
+  const rng = mulberry32(config.seed ?? 42);
 
-  for (let i = 0; i < total; i++) {
-    if (!inert[i]) {
-      contributionIndices.push(i);
-    }
+  // Fisher-Yates shuffle for random reveal
+  for (let i = contributionIndices.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [contributionIndices[i], contributionIndices[j]] = [contributionIndices[j], contributionIndices[i]];
   }
 
-  /*
-   * IMPORTANT:
-   *
-   * Do NOT randomly remove contribution cells.
-   * Do NOT run Game of Life on the source grid.
-   *
-   * The GitHub contribution grid is the source of truth.
-   */
-
-  const targetFrames = config.targetFrameCount;
   const frames: FrameState[] = [];
 
-  // Deterministic ordering.
-  //
-  // We reveal cells from left -> right and top -> bottom.
-  // You can change this later to create a more interesting animation.
-  contributionIndices.sort((a, b) => {
-    const ar = Math.floor(a / cols);
-    const ac = a % cols;
-
-    const br = Math.floor(b / cols);
-    const bc = b % cols;
-
-    if (ac !== bc) return ac - bc;
-    return ar - br;
-  });
-
-  /*
-   * Phase 1:
-   * Gradually reveal the actual GitHub contribution cells.
-   *
-   * About 60% of the animation is used for the reveal.
-   */
-  const revealFrames = Math.max(
-    1,
-    Math.floor(targetFrames * 0.65),
-  );
+  // Phase 1: Reveal randomly within 2 seconds
+  const targetRevealDurationMs = 2000;
+  const revealFrames = Math.max(1, Math.floor(targetRevealDurationMs / ANIM_FRAME_MS));
 
   for (let f = 0; f < revealFrames; f++) {
     const alive = new Uint8Array(total);
     const age = new Uint16Array(total);
-
     const births: [number, number][] = [];
     const deaths: [number, number][] = [];
 
-    const progress =
-      revealFrames === 1
-        ? 1
-        : (f + 1) / revealFrames;
-
-    const visibleCount = Math.floor(
-      progress * contributionIndices.length,
-    );
+    const progress = revealFrames === 1 ? 1 : (f + 1) / revealFrames;
+    const visibleCount = Math.floor(progress * contributionIndices.length);
 
     for (let i = 0; i < visibleCount; i++) {
       const idx = contributionIndices[i];
-
       alive[idx] = 1;
       age[idx] = Math.min(7, f + 1);
-
       const r = Math.floor(idx / cols);
       const c = idx % cols;
-
       births.push([r, c]);
     }
 
-    frames.push({
-      alive,
-      births,
-      deaths,
-      age,
-    });
+    frames.push({ alive, births, deaths, age });
   }
 
-  /*
-   * Phase 2:
-   * Hold the EXACT GitHub contribution pattern.
-   *
-   * This is the important part:
-   *
-   * Every non-zero GitHub contribution cell is alive.
-   * Every zero-contribution cell remains inert.
-   */
-  const finalAlive = new Uint8Array(total);
-  const finalAge = new Uint16Array(total);
+  // Hold the final filled state for 2 seconds before Game of Life
+  const holdWaitDurationMs = 2000;
+  const holdWaitFrames = Math.floor(holdWaitDurationMs / ANIM_FRAME_MS);
+  const filledAlive = frames[frames.length - 1].alive;
+  const filledAge = frames[frames.length - 1].age;
 
-  for (const idx of contributionIndices) {
-    finalAlive[idx] = 1;
-    finalAge[idx] = 7;
-  }
-
-  const holdFrames = targetFrames - frames.length;
-
-  for (let f = 0; f < holdFrames; f++) {
+  for (let w = 0; w < holdWaitFrames; w++) {
     frames.push({
-      alive: new Uint8Array(finalAlive),
+      alive: new Uint8Array(filledAlive),
       births: [],
       deaths: [],
-      age: new Uint16Array(finalAge),
+      age: new Uint16Array(filledAge),
     });
   }
 
-  /*
-   * Safety:
-   * Guarantee EXACTLY targetFrameCount frames.
-   */
-  while (frames.length < targetFrames) {
-    frames.push({
-      alive: new Uint8Array(finalAlive),
-      births: [],
-      deaths: [],
-      age: new Uint16Array(finalAge),
-    });
-  }
+  // Phase 2: Game of Life for max 30 seconds
+  const maxGolDurationMs = 30000;
+  const maxGolFrames = Math.floor(maxGolDurationMs / ANIM_FRAME_MS);
+  
+  let currentAlive = frames[frames.length - 1].alive.slice();
+  let currentAge = frames[frames.length - 1].age.slice();
 
-  if (frames.length > targetFrames) {
-    frames.length = targetFrames;
+  for (let f = 0; f < maxGolFrames; f++) {
+    const nextAlive = new Uint8Array(total);
+    const nextAge = new Uint16Array(total);
+    const births: [number, number][] = [];
+    const deaths: [number, number][] = [];
+    let anyAlive = false;
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const idx = r * cols + c;
+        if (inert[idx]) continue;
+
+        const n = neighborCount(currentAlive, rows, cols, r, c);
+        const isAlive = currentAlive[idx] === 1;
+
+        if (isAlive) {
+          if (n === 2 || n === 3) {
+            nextAlive[idx] = 1;
+            nextAge[idx] = Math.min(7, currentAge[idx] + 1);
+            anyAlive = true;
+          } else {
+            deaths.push([r, c]);
+          }
+        } else {
+          if (n === 3) {
+            nextAlive[idx] = 1;
+            nextAge[idx] = 1;
+            births.push([r, c]);
+            anyAlive = true;
+          }
+        }
+      }
+    }
+
+    frames.push({ alive: nextAlive, births, deaths, age: nextAge });
+
+    // Check if pattern stagnated (no change from previous frame)
+    let patternChanged = false;
+    for (let i = 0; i < total; i++) {
+      if (nextAlive[i] !== currentAlive[i]) {
+        patternChanged = true;
+        break;
+      }
+    }
+
+    currentAlive = nextAlive;
+    currentAge = nextAge;
+
+    if (!anyAlive || !patternChanged) {
+      break;
+    }
   }
 
   return {
