@@ -67,6 +67,8 @@ export async function fetchContributionGrid(
     to: to.toISOString(),
   });
 
+  console.log("Raw GraphQL Response:", JSON.stringify(res, null, 2));
+
   const calendar = res.user.contributionsCollection.contributionCalendar;
   const rawWeeks = calendar.weeks;
   const totalContributions = calendar.totalContributions;
