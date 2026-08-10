@@ -21,16 +21,16 @@ export interface Palette {
 }
 
 export const DARK_PALETTE: Palette = {
-  bg: "#050805",
-  inert: "#0c100c",
-  scanline: "#070b07",
-  aliveBright: "#37d269",
-  aliveDim: "#18502e",
-  birth: "#d7ffc8",
-  death: "#dc463c",
-  glowAlive: "#3cd26e",
-  glowBirth: "#dcffd2",
-  glowDeath: "#d2463c",
+  bg: "#0d1117", // standard github dark mode background
+  inert: "#161b22", // standard github empty cell
+  scanline: "#0d1117",
+  aliveBright: "#39d353", // vibrant github green
+  aliveDim: "#0e4429", // dim github green
+  birth: "#ffffff", // white flash
+  death: "#f85149", // github red
+  glowAlive: "#39d353",
+  glowBirth: "#ffffff",
+  glowDeath: "#f85149",
 };
 
 export const LIGHT_PALETTE: Palette = {

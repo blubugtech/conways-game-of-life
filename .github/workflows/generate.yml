@@ -17,21 +17,12 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
-      - name: setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "npm"
-
-      - name: install dependencies
-        run: npm ci
-
       - name: generate animation
-        env:
-          GITHUB_USER_NAME: ${{ github.repository_owner }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OUT_DIR: dist
-        run: npm run build
+        uses: ./
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          out_dir: dist
 
       - name: push output to output branch
         uses: crazy-max/ghaction-github-pages@v4

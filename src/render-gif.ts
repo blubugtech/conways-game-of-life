@@ -20,6 +20,8 @@ function frameSVG(
   palette: Palette,
   width: number,
   height: number,
+  population: number,
+  cumulativeDeaths: number,
 ): string {
   const births = new Set(frame.births.map(([r, c]) => r * cols + c));
   const deaths = new Set(frame.deaths.map(([r, c]) => r * cols + c));
@@ -61,11 +63,15 @@ function frameSVG(
     }
   }
 
+  const textY = height - PAD + 5;
+  const textStr = `POPULATION: ${population.toString().padStart(4, '0')} | ERADICATED: ${cumulativeDeaths.toString().padStart(4, '0')}`;
+
   return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
 <defs><filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2"/></filter></defs>
 <rect x="0" y="0" width="${width}" height="${height}" fill="${palette.bg}" />
 ${glows.join("\n")}
 ${rects.join("\n")}
+<text x="${PAD}" y="${textY}" font-family="monospace, 'Courier New', Courier" font-size="11" fill="${palette.aliveBright}" font-weight="bold" letter-spacing="1">${textStr}</text>
 </svg>`;
 }
 
@@ -79,14 +85,19 @@ export async function renderGIF(
   scale = 2,
 ): Promise<void> {
   const width = cols * (CELL + GAP) - GAP + PAD * 2;
-  const height = rows * (CELL + GAP) - GAP + PAD * 2;
+  const height = rows * (CELL + GAP) - GAP + PAD * 2 + 20; // Extra 20px for text
   const outW = width * scale;
   const outH = height * scale;
 
   const gif = GIFEncoder();
 
+  let cumulativeDeaths = 0;
   for (let i = 0; i < frames.length; i++) {
-    const svg = frameSVG(rows, cols, inert, frames[i], palette, width, height);
+    const f = frames[i];
+    const population = f.alive.reduce((a, b) => a + b, 0);
+    cumulativeDeaths += f.deaths.length;
+
+    const svg = frameSVG(rows, cols, inert, f, palette, width, height, population, cumulativeDeaths);
     const { data, info } = await sharp(Buffer.from(svg))
       .resize(outW, outH)
       .ensureAlpha()
@@ -94,7 +105,7 @@ export async function renderGIF(
       .toBuffer({ resolveWithObject: true });
 
     const rgba = new Uint8ClampedArray(data.buffer, data.byteOffset, data.byteLength);
-    const palette256 = quantize(rgba, 128);
+    const palette256 = quantize(rgba, 256);
     const index = applyPalette(rgba, palette256);
 
     const isLast = i === frames.length - 1;

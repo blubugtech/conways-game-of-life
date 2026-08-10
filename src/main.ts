@@ -1,3 +1,4 @@
+import * as core from "@actions/core";
 import { fetchContributionGrid } from "./fetch.js";
 import { runSimulation } from "./simulate.js";
 import { renderSVG } from "./render-svg.js";
@@ -7,15 +8,17 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 async function main() {
-  const userName = process.env.GITHUB_USER_NAME || process.argv[2];
-  const token = process.env.GITHUB_TOKEN;
-  const outDir = process.env.OUT_DIR || "dist";
+  // In a GitHub Action, inputs are read via core.getInput
+  // Fallbacks are just for local testing if running via tsx directly
+  const userName = core.getInput("github_user_name") || process.env.GITHUB_USER_NAME || process.argv[2];
+  const token = core.getInput("github_token") || process.env.GITHUB_TOKEN;
+  const outDir = core.getInput("out_dir") || process.env.OUT_DIR || "dist";
 
   if (!userName) {
-    throw new Error("Provide a GitHub username: GITHUB_USER_NAME env var or first CLI arg.");
+    throw new Error("Provide github_user_name input or GITHUB_USER_NAME env var.");
   }
   if (!token) {
-    throw new Error("Provide GITHUB_TOKEN env var (a token with no scopes works, contributions are public).");
+    throw new Error("Provide github_token input or GITHUB_TOKEN env var.");
   }
 
   console.log(`Fetching contribution graph for ${userName}...`);
@@ -50,6 +53,5 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error(err);
-  process.exit(1);
+  core.setFailed(err instanceof Error ? err.message : String(err));
 });

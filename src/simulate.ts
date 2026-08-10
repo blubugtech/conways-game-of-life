@@ -96,9 +96,8 @@ export function runSimulation(
   }
 
   const frames: FrameState[] = [];
-  const maxTicks = config.maxTicks ?? 400;
-  let prevPop = -1;
-  let stagnant = 0;
+  const maxTicks = config.maxTicks ?? config.targetFrameCount;
+  const history: Uint8Array[] = [];
 
   for (let tick = 0; tick < maxTicks; tick++) {
     const next = new Uint8Array(total);
@@ -136,48 +135,33 @@ export function runSimulation(
       }
     }
 
-    const pop = next.reduce((a, b) => a + b, 0);
-    if (Math.abs(pop - prevPop) <= 1) stagnant++;
-    else stagnant = 0;
-    prevPop = pop;
-
-    // reinjection: only into non-inert cells, biased toward higher-activity days
-    const activeCount = total - inert.reduce((a, b) => a + b, 0);
-    const minHealthyPop = Math.max(4, activeCount * 0.06);
-    if (pop < minHealthyPop || stagnant > 12) {
-      let injected = 0;
-      let guard = 0;
-      const injectTarget = Math.max(5, Math.floor(activeCount * 0.04));
-      while (injected < injectTarget && guard < 400) {
-        guard++;
-        const idx = Math.floor(rand() * total);
-        if (!inert[idx] && !next[idx] && rand() < 0.3 + weight[idx] * 0.4) {
-          next[idx] = 1;
-          nextAge[idx] = 1;
-          births.push([Math.floor(idx / cols), idx % cols]);
-          injected++;
-        }
-      }
-      stagnant = 0;
-    }
-
     frames.push({ alive: next, births, deaths, age: nextAge });
     alive = next;
     age = nextAge;
+
+    // Loop detection: check if current state matches any of the last 8 states
+    let isLoop = false;
+    for (let h = history.length - 1; h >= Math.max(0, history.length - 8); h--) {
+      let match = true;
+      for (let i = 0; i < total; i++) {
+        if (history[h][i] !== next[i]) {
+          match = false;
+          break;
+        }
+      }
+      if (match) {
+        isLoop = true;
+        break;
+      }
+    }
+    
+    if (isLoop) {
+      break;
+    }
+    history.push(next);
   }
 
-  // resample/trim to exactly targetFrameCount for a precise output duration
-  const resampled = resampleFrames(frames, config.targetFrameCount);
-
-  return { rows, cols, inert, weight, frames: resampled };
+  return { rows, cols, inert, weight, frames };
 }
 
-function resampleFrames(frames: FrameState[], target: number): FrameState[] {
-  if (frames.length === target) return frames;
-  const out: FrameState[] = [];
-  for (let i = 0; i < target; i++) {
-    const srcIdx = Math.min(frames.length - 1, Math.floor((i / target) * frames.length));
-    out.push(frames[srcIdx]);
-  }
-  return out;
-}
+
