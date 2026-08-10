@@ -40,15 +40,21 @@ export function buildInertMask(grid: ContributionGrid): {
 } {
   const cols = grid.weeks.length;
   const rows = 7;
-  const inert = new Uint8Array(rows * cols);
+
+  // Pre-fill everything as inert (dead). We only clear cells that have an
+  // actual API entry, so partial first/last weeks and future dates stay dead.
+  const inert = new Uint8Array(rows * cols).fill(1);
   const weight = new Float32Array(rows * cols);
 
   for (let c = 0; c < cols; c++) {
     const week = grid.weeks[c];
-    for (let r = 0; r < rows; r++) {
-      const day = week[r];
+    for (const day of week) {
+      // Use the explicit weekday field (0=Sun … 6=Sat) — NOT the positional
+      // index — so partial weeks and any API ordering are handled correctly.
+      const r = day.weekday;
       const idx = r * cols + c;
-      if (!day || day.count === 0) {
+      if (day.count === 0) {
+        // Day is present but has no contributions → stay inert
         inert[idx] = 1;
         weight[idx] = 0;
       } else {
