@@ -6,7 +6,7 @@
 
 [![Build](https://img.shields.io/github/actions/workflow/status/blubugtech/singularity-grid/generate.yml?style=for-the-badge)](https://github.com/blubugtech/singularity-grid/actions)
 
-*Inspired by [Platane/snk](https://github.com/Platane/snk)*
+*Inspired by [Platane/snk](https://github.com/Platane/snk) and Conway's Game of Life*
 
 </div>
 
