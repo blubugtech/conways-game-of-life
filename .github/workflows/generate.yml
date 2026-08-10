@@ -21,7 +21,6 @@ jobs:
         uses: ./
         with:
           github_user_name: amankrmj09
-          github_token: ${{ secrets.GITHUB_TOKEN }}
           out_dir: dist
 
       - name: push output to output branch
