@@ -1,6 +1,6 @@
 {
   "name": "conways-game-of-life",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Turns a GitHub contribution graph into a Conway's-Game-of-Life AI virus takeover animation (SVG + GIF, dark + light).",
   "type": "module",
   "private": true,
