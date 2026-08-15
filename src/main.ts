@@ -37,19 +37,19 @@ async function main() {
 
   console.log("Rendering SVG (dark)...");
   const svgDark = renderSVG(sim.rows, sim.cols, sim.inert, sim.frames, DARK_PALETTE);
-  console.log("Writing singularity-grid-dark.svg...");
-  await fs.writeFile(path.join(outDir, "singularity-grid-dark.svg"), svgDark);
+  console.log("Writing conways-game-of-life-dark.svg...");
+  await fs.writeFile(path.join(outDir, "conways-game-of-life-dark.svg"), svgDark);
 
   console.log("Rendering SVG (light)...");
   const svgLight = renderSVG(sim.rows, sim.cols, sim.inert, sim.frames, LIGHT_PALETTE);
-  console.log("Writing singularity-grid-light.svg...");
-  await fs.writeFile(path.join(outDir, "singularity-grid-light.svg"), svgLight);
+  console.log("Writing conways-game-of-life-light.svg...");
+  await fs.writeFile(path.join(outDir, "conways-game-of-life-light.svg"), svgLight);
 
-  console.log("Writing singularity-grid-dark.gif...");
-  await renderGIF(sim.rows, sim.cols, sim.inert, sim.frames, DARK_PALETTE, path.join(outDir, "singularity-grid-dark.gif"));
+  console.log("Writing conways-game-of-life-dark.gif...");
+  await renderGIF(sim.rows, sim.cols, sim.inert, sim.frames, DARK_PALETTE, path.join(outDir, "conways-game-of-life-dark.gif"));
 
-  console.log("Writing singularity-grid-light.gif...");
-  await renderGIF(sim.rows, sim.cols, sim.inert, sim.frames, LIGHT_PALETTE, path.join(outDir, "singularity-grid-light.gif"));
+  console.log("Writing conways-game-of-life-light.gif...");
+  await renderGIF(sim.rows, sim.cols, sim.inert, sim.frames, LIGHT_PALETTE, path.join(outDir, "conways-game-of-life-light.gif"));
 
   console.log(`Done. Output written to ${outDir}/`);
 }

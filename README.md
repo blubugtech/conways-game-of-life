@@ -9,9 +9,9 @@
 <br />
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/blubugtech/singularity-grid/output/singularity-grid-dark.svg" />
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/blubugtech/singularity-grid/output/singularity-grid-light.svg" />
-  <img alt="singularity-grid" src="https://raw.githubusercontent.com/blubugtech/singularity-grid/output/singularity-grid-light.svg" />
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/blubugtech/conways-game-of-life/output/conways-game-of-life-dark.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/blubugtech/conways-game-of-life/output/conways-game-of-life-light.svg" />
+  <img alt="conways-game-of-life" src="https://raw.githubusercontent.com/blubugtech/conways-game-of-life/output/conways-game-of-life-light.svg" />
 </picture>
 
 </div>
@@ -46,8 +46,8 @@ GITHUB_USER_NAME=yourusername GITHUB_TOKEN=ghp_xxx npm run build
 
 Outputs land in `dist/output/`:
 
-* `singularity-grid-dark.svg`, `singularity-grid-light.svg`
-* `singularity-grid-dark.gif`, `singularity-grid-light.gif`
+* `conways-game-of-life-dark.svg`, `conways-game-of-life-light.svg`
+* `conways-game-of-life-dark.gif`, `conways-game-of-life-light.gif`
 
 ### As a GitHub Action
 
@@ -81,7 +81,7 @@ jobs:
       - uses: actions/checkout@v7.0.1
       
       - name: Generate Conway's Game of Life
-        uses: blubugtech/singularity-grid@v1.0.8
+        uses: blubugtech/conways-game-of-life@v1.0.8
         with:
           github_user_name: ${{ github.repository_owner }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -110,9 +110,9 @@ For dark mode support on GitHub, use this [special syntax](https://docs.github.c
 
 ```html
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/<USERNAME>/<USERNAME>/output/singularity-grid-dark.svg" />
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/<USERNAME>/<USERNAME>/output/singularity-grid-light.svg" />
-  <img alt="singularity-grid" src="https://raw.githubusercontent.com/<USERNAME>/<USERNAME>/output/singularity-grid-light.svg" />
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/<USERNAME>/<USERNAME>/output/conways-game-of-life-dark.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/<USERNAME>/<USERNAME>/output/conways-game-of-life-light.svg" />
+  <img alt="conways-game-of-life" src="https://raw.githubusercontent.com/<USERNAME>/<USERNAME>/output/conways-game-of-life-light.svg" />
 </picture>
 ```
 

@@ -39,6 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0-beta] - 2026-08-10
 
 ### Added
-- Initial release of the `singularity-grid` GitHub Action.
+- Initial release of the `conways-game-of-life` GitHub Action.
 - Configurable generation of Game of Life style contribution graphs.
 - Outputs crisp SVG and optimized GIF formats.
