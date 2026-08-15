@@ -12,7 +12,7 @@ async function main() {
   // Fallbacks are just for local testing if running via tsx directly
   const userName = core.getInput("github_user_name") || process.env.GITHUB_USER_NAME || process.argv[2];
   const token = core.getInput("github_token") || process.env.GITHUB_TOKEN;
-  let outDir = core.getInput("out_dir") || process.env.OUT_DIR || "dist";
+  let outDir = core.getInput("out_dir") || process.env.OUT_DIR || "dist/output";
 
   if (process.env.GITHUB_WORKSPACE && !path.isAbsolute(outDir)) {
     outDir = path.resolve(process.env.GITHUB_WORKSPACE, outDir);

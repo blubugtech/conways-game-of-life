@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Dynamic Timing & Intro**: Cells now organically spawn into existence over the first 2 seconds, followed by a dramatic 2-second pause before simulation begins.
 - **Dynamic Simulation Length**: The simulation now runs indefinitely until a stable state or loop is detected, and pads the final loop for 5 seconds (50 frames).
-- **Arcade Title**: Added a "SINGULARITY GRID" title at the top center of the generated SVG and GIF.
+- **Arcade Title**: Added a "CONWAY'S GAME OF LIFE" title at the top center of the generated SVG and GIF.
 - **Death Flash Tuning**: Cells now turn red for exactly 500ms (5 frames) upon death before fading to the inert background color, making the death animation highly visible.
 
 ### Changed

@@ -134,7 +134,7 @@ export function renderSVG(
 
   return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <rect x="0" y="0" width="${width}" height="${height}" fill="${palette.bg}" />
-<text x="${width / 2}" y="${PAD + 12}" text-anchor="middle" font-family="monospace, 'Courier New', Courier" font-size="16" fill="${palette.aliveBright}" font-weight="bold" letter-spacing="2">SINGULARITY GRID</text>
+<text x="${width / 2}" y="${PAD + 12}" text-anchor="middle" font-family="monospace, 'Courier New', Courier" font-size="16" fill="${palette.aliveBright}" font-weight="bold" letter-spacing="2">CONWAY'S GAME OF LIFE</text>
 ${rects.join("\n")}
 ${animations.join("\n")}
 </svg>`;
