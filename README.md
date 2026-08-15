@@ -81,7 +81,7 @@ jobs:
       - uses: actions/checkout@v7.0.1
       
       - name: Generate Conway's Game of Life
-        uses: blubugtech/conways-game-of-life@v1.0.8
+        uses: blubugtech/conways-game-of-life@v2.0.0
         with:
           github_user_name: ${{ github.repository_owner }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
