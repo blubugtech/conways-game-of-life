@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🌌 singularity-grid
+# 🌌 Conway's Game of Life
 
 **Turn your GitHub contribution graph into a living, cellular automaton AI takeover.**
 
@@ -18,7 +18,7 @@
 
 ---
 
-**singularity-grid** turns your GitHub contribution graph into a 15-second animated takeover, styled as an AI/machine intelligence spreading across your commit history.
+**Conway's Game of Life** turns your GitHub contribution graph into a 15-second animated takeover, styled as an AI/machine intelligence spreading across your commit history.
 
 Days you didn't code stay permanently dark — inert territory the simulation can't touch — while days you did commit become living cells in a tuned variant of Conway's Game of Life: a cellular automaton where each cell's fate depends on its neighbors. Instead of one snake eating the grid in a straight line, colonies of "infected" cells organically spawn, spread, pulse, stabilize, and sometimes die back before flaring up again elsewhere — giving it a genuinely alive, unpredictable texture rather than a scripted crawl.
 
@@ -44,7 +44,7 @@ npm install
 GITHUB_USER_NAME=yourusername GITHUB_TOKEN=ghp_xxx npm run build
 ```
 
-Outputs land in `dist/`:
+Outputs land in `dist/output/`:
 
 * `singularity-grid-dark.svg`, `singularity-grid-light.svg`
 * `singularity-grid-dark.gif`, `singularity-grid-light.gif`
@@ -60,7 +60,7 @@ Create the following file in your profile repository:
 Add:
 
 ```yaml
-name: Generate Singularity Grid
+name: Generate Conway's Game of Life
 
 on:
   schedule:
@@ -80,7 +80,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
       
-      - name: Generate Singularity Grid
+      - name: Generate Conway's Game of Life
         uses: blubugtech/singularity-grid@v1.0.8
         with:
           github_user_name: ${{ github.repository_owner }}

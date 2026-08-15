@@ -1,6 +1,6 @@
-# Contributing to Singularity Grid
+# Contributing to Conway's Game of Life
 
-First off, thank you for considering contributing to Singularity Grid! It's people like you that make open source such a fantastic community.
+First off, thank you for considering contributing to Conway's Game of Life! It's people like you that make open source such a fantastic community.
 
 ## Local Development
 
@@ -22,7 +22,7 @@ To get started with local development:
    ```bash
    npm run test:local
    ```
-   This will output the generated SVGs and GIFs into the `dist/` directory.
+   This will output the generated SVGs and GIFs into the `dist/output/` directory.
 
 4. **Code Formatting:**
    We use Prettier and ESLint. Please ensure your code is formatted before opening a Pull Request:

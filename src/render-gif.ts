@@ -69,7 +69,7 @@ function frameSVG(
   return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
 <defs><filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2"/></filter></defs>
 <rect x="0" y="0" width="${width}" height="${height}" fill="${palette.bg}" />
-<text x="${width / 2}" y="${PAD + 12}" text-anchor="middle" font-family="monospace, 'Courier New', Courier" font-size="16" fill="${palette.aliveBright}" font-weight="bold" letter-spacing="2">SINGULARITY GRID</text>
+<text x="${width / 2}" y="${PAD + 12}" text-anchor="middle" font-family="monospace, 'Courier New', Courier" font-size="16" fill="${palette.aliveBright}" font-weight="bold" letter-spacing="2">CONWAY'S GAME OF LIFE</text>
 ${glows.join("\n")}
 ${rects.join("\n")}
 <text x="${PAD}" y="${textY}" font-family="monospace, 'Courier New', Courier" font-size="11" fill="${palette.aliveBright}" font-weight="bold" letter-spacing="1">${textStr}</text>

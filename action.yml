@@ -1,4 +1,4 @@
-name: "Singularity Grid"
+name: "Conway's Game of Life"
 description: "Turns your GitHub contribution graph into a 15-second animated takeover (Conway's Game of Life)."
 author: "blubugtech"
 branding:
@@ -16,7 +16,7 @@ inputs:
   out_dir:
     description: "Directory to output the generated files"
     required: false
-    default: "dist"
+    default: "dist/output"
 
 runs:
   using: "composite"
