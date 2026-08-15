@@ -1,4 +1,4 @@
-name: generate singularity-grid contribution animation
+name: generate Conway's Game of Life contribution animation
 
 on:
   schedule:

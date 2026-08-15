@@ -75,7 +75,7 @@ async function main() {
 
   // 1. Default bursty scenario (original behavior)
   const defaultGrid = buildSyntheticGrid();
-  await runScenario("singularity-grid", defaultGrid, outDir);
+  await runScenario("conways-game-of-life", defaultGrid, outDir);
 
   console.log("\nDone ->", outDir);
 }

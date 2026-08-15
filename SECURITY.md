@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Currently, only the latest major release of `singularity-grid` is actively supported with security updates.
+Currently, only the latest major release of `conways-game-of-life` is actively supported with security updates.
 
 | Version | Supported          |
 | ------- | ------------------ |
@@ -11,7 +11,7 @@ Currently, only the latest major release of `singularity-grid` is actively suppo
 
 ## Reporting a Vulnerability
 
-We take the security of this project seriously. If you discover a security vulnerability within `singularity-grid`, please do not publicly disclose it via GitHub issues. 
+We take the security of this project seriously. If you discover a security vulnerability within `conways-game-of-life`, please do not publicly disclose it via GitHub issues. 
 
 Instead, please send an e-mail to **contact@blubug.me**. 
 

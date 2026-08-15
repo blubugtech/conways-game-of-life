@@ -8,8 +8,8 @@ To get started with local development:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/blubugtech/singularity-grid.git
-   cd singularity-grid
+   git clone https://github.com/blubugtech/conways-game-of-life.git
+   cd conways-game-of-life
    ```
 
 2. **Install dependencies:**
